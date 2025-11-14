@@ -269,7 +269,7 @@ export default function CountryDetailPage({ params }: PageProps) {
                     <Link
                       key={b.alpha3Code}
                       href={`/country/${b.alpha3Code}`}
-                      className={`px-4 py-1 shadow-sm text-xs rounded ${
+                      className={`px-4 py-2 shadow-sm text-sm rounded font-bold ${
                         isDark
                           ? "bg-[#2b3945] text-white"
                           : "bg-white text-[#656565]"
