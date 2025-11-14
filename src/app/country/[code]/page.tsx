@@ -10,50 +10,50 @@ import { MdKeyboardBackspace } from "react-icons/md";
 
 import { BsFillMoonFill } from "react-icons/bs";
 type Country = {
-  name: string;
-  topLevelDomain: string[];
-  alpha2Code: string;
-  alpha3Code: string;
-  callingCodes: string[];
-  capital: string;
-  altSpellings: string[];
-  subregion: string;
-  region: string;
-  population: number;
-  latlng: number[];
-  demonym: string;
-  area: number;
+  name?: string;
+  topLevelDomain?: string[];
+  alpha2Code?: string;
+  alpha3Code?: string;
+  callingCodes?: string[];
+  capital?: string;
+  altSpellings?: string[];
+  subregion?: string;
+  region?: string;
+  population?: number;
+  latlng?: number[];
+  demonym?: string;
+  area?: number;
   gini?: number;
-  timezones: string[];
+  timezones?: string[];
   borders?: string[];
-  nativeName: string;
-  numericCode: string;
-  flags: {
-    svg: string;
-    png: string;
+  nativeName?: string;
+  numericCode?: string;
+  flags?: {
+    svg?: string;
+    png?: string;
   };
-  currencies: {
-    code: string;
-    name: string;
-    symbol: string;
+  currencies?: {
+    code?: string;
+    name?: string;
+    symbol?: string;
   }[];
-  languages: {
-    iso639_1: string;
-    iso639_2: string;
-    name: string;
-    nativeName: string;
+  languages?: {
+    iso639_1?: string;
+    iso639_2?: string;
+    name?: string;
+    nativeName?: string;
   }[];
-  translations: {
+  translations?: {
     [key: string]: string;
   };
-  flag: string;
+  flag?: string;
   regionalBlocs?: {
-    acronym: string;
-    name: string;
-    otherNames: string[];
+    acronym?: string;
+    name?: string;
+    otherNames?: string[];
   }[];
   cioc?: string;
-  independent: boolean;
+  independent?: boolean;
 };
 
 type PageProps = {
@@ -64,18 +64,17 @@ const formatPopulation = (num: number) =>
   new Intl.NumberFormat("en-US").format(num);
 
 export default function CountryDetailPage({ params }: PageProps) {
- const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const { code } = usePromise(params);
 
   const isDark = theme === "dark";
-
 
   const allCountries = data as Country[];
 
   const country = useMemo(
     () =>
       allCountries.find(
-        (c) => c.alpha3Code.toLowerCase() === code.toLowerCase()
+        (c) => c.alpha3Code?.toLowerCase() === code.toLowerCase()
       ),
     [allCountries, code]
   );
@@ -97,20 +96,26 @@ export default function CountryDetailPage({ params }: PageProps) {
         }
       >
         <header className={`shadow-sm ${isDark ? "bg-[#2b3945]" : "bg-white"}`}>
-        <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
-          <h1 className={`text-sm sm:text-xl font-extrabold  ${ isDark ? `text-white` :`text-[#656565]`}`}>
-            Where in the world?
-          </h1>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="flex items-center gap-2 text-xs sm:text-sm font-semibold cursor-pointer"
-          >
-            <span className="text-md">{isDark ? <BsFillMoonFill/> : <BsMoon/>}</span>
-            <span>Dark Mode</span>
-          </button>
-        </div>
-      </header>
+          <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+            <h1
+              className={`text-sm sm:text-xl font-extrabold  ${
+                isDark ? `text-white` : `text-[#656565]`
+              }`}
+            >
+              Where in the world?
+            </h1>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex items-center gap-2 text-xs sm:text-sm font-semibold cursor-pointer"
+            >
+              <span className="text-md">
+                {isDark ? <BsFillMoonFill /> : <BsMoon />}
+              </span>
+              <span>Dark Mode</span>
+            </button>
+          </div>
+        </header>
         <main className="mx-auto max-w-6xl px-4 py-10">
           <Link
             href="/"
@@ -118,7 +123,7 @@ export default function CountryDetailPage({ params }: PageProps) {
               isDark ? "bg-[#2b3945] text-white" : "bg-white text-[#656565]"
             }`}
           >
-            <MdOutlineKeyboardBackspace/> Back
+            <MdOutlineKeyboardBackspace /> Back
           </Link>
           <p className="mt-8 text-lg font-semibold">Country not found.</p>
         </main>
@@ -126,11 +131,30 @@ export default function CountryDetailPage({ params }: PageProps) {
     );
   }
 
-  const currencies = country.currencies.map((c) => c.name).join(", ");
-  const languages = country.languages.map((l) => l.name).join(", ");
-  const tlds = country.topLevelDomain.join(", ");
-  const subRegion = country.subregion || country.region;
+  const currencies =
+    country.currencies && country.currencies.length
+      ? country.currencies
+          .map((c) => c.name ?? "")
+          .filter(Boolean)
+          .join(", ")
+      : "N/A";
 
+  const languages =
+    country.languages && country.languages.length
+      ? country.languages
+          .map((l) => l.name ?? "")
+          .filter(Boolean)
+          .join(", ")
+      : "N/A";
+
+  const tlds =
+    country.topLevelDomain && country.topLevelDomain.length
+      ? country.topLevelDomain.join(", ")
+      : "N/A";
+
+  const subRegion = country.subregion || country.region || "N/A";
+  const flagSrc =
+    country.flags?.svg || country.flags?.png || country.flag || "";
   return (
     <div
       className={
@@ -142,7 +166,11 @@ export default function CountryDetailPage({ params }: PageProps) {
       {/* HEADER */}
       <header className={`shadow-sm ${isDark ? "bg-[#2b3945]" : "bg-white"}`}>
         <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
-          <h1 className={`text-sm sm:text-xl font-extrabold  ${ isDark ? `text-white` :`text-[#656565]`}`}>
+          <h1
+            className={`text-sm sm:text-xl font-extrabold  ${
+              isDark ? `text-white` : `text-[#656565]`
+            }`}
+          >
             Where in the world?
           </h1>
           <button
@@ -150,7 +178,9 @@ export default function CountryDetailPage({ params }: PageProps) {
             onClick={toggleTheme}
             className="flex items-center gap-2 text-xs sm:text-sm font-semibold cursor-pointer"
           >
-            <span className="text-md">{isDark ? <BsFillMoonFill/> : <BsMoon/>}</span>
+            <span className="text-md">
+              {isDark ? <BsFillMoonFill /> : <BsMoon />}
+            </span>
             <span>Dark Mode</span>
           </button>
         </div>
@@ -165,7 +195,7 @@ export default function CountryDetailPage({ params }: PageProps) {
             isDark ? "bg-[#2b3945] text-white" : "bg-white text-[#656565]"
           }`}
         >
-          <MdKeyboardBackspace/> Back
+          <MdKeyboardBackspace /> Back
         </Link>
 
         {/* Content */}
@@ -174,8 +204,8 @@ export default function CountryDetailPage({ params }: PageProps) {
           <div className="w-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={country.flags.svg || country.flags.png || country.flag}
-              alt={`${country.name} flag`}
+              src={flagSrc}
+              alt={`${country.name ?? "Country"} flag`}
               className="w-full max-h-[400px] object-cover"
             />
           </div>
@@ -194,7 +224,7 @@ export default function CountryDetailPage({ params }: PageProps) {
                 </p>
                 <p>
                   <span className="font-semibold">Population: </span>
-                  {formatPopulation(country.population)}
+                  {formatPopulation(country.population ?? 0)}
                 </p>
                 <p>
                   <span className="font-semibold">Region: </span>
