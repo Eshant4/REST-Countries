@@ -1,64 +1,242 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useMemo, useState } from "react";
+import countriesData from "./data.json";
+import Link from "next/link";
+import { MdOutlineSearch } from "react-icons/md";
+import { FaChevronDown } from "react-icons/fa";
+import { FaChevronUp } from "react-icons/fa";
+import { Menu } from "@headlessui/react";
+import { useTheme } from "./MyContext";
+import { BsMoon } from "react-icons/bs";
+import { BsFillMoonFill } from "react-icons/bs";
+
+type Country = {
+  name: string;
+  topLevelDomain: string[];
+  alpha2Code: string;
+  alpha3Code: string;
+  callingCodes: string[];
+  capital: string;
+  altSpellings: string[];
+  subregion: string;
+  region: string;
+  population: number;
+  latlng: number[];
+  demonym: string;
+  area: number;
+  gini?: number;
+  timezones: string[];
+  borders?: string[];
+  nativeName: string;
+  numericCode: string;
+  flags: {
+    svg: string;
+    png: string;
+  };
+  currencies: {
+    code: string;
+    name: string;
+    symbol: string;
+  }[];
+  languages: {
+    iso639_1: string;
+    iso639_2: string;
+    name: string;
+    nativeName: string;
+  }[];
+  translations: {
+    [key: string]: string;
+  };
+  flag: string;
+  regionalBlocs?: {
+    acronym: string;
+    name: string;
+    otherNames: string[];
+  }[];
+  cioc?: string;
+  independent: boolean;
+};
+type CountryCardProps = {
+  code: string;
+  name: string;
+  population: number;
+  region: string;
+  capital: string;
+  flagUrl: string;
+};
+
+const formatPopulation = (num: number) =>
+  new Intl.NumberFormat("en-US").format(num);
+
+const mapRawToCard = (country: Country): CountryCardProps => ({
+  code: country.alpha3Code,
+  name: country.name,
+  population: country.population,
+  region: country.region,
+  capital: country.capital || "—",
+  flagUrl: country.flags.png || country.flags.svg || country.flag,
+});
+
+export default function HomePage() {
+  const { theme, toggleTheme } = useTheme();
+  const [search, setSearch] = useState("");
+  const [regionFilter, setRegionFilter] = useState("");
+  const regions = ["Africa", "Americas", "Asia", "Europe", "Oceania"];
+
+  const isDark = theme === "dark";
+
+  // map JSON only once
+  const allCountries = useMemo(
+    () => (countriesData as Country[]).map(mapRawToCard),
+    []
+  );
+
+  const filteredCountries = useMemo(() => {
+    return allCountries.filter((c) => {
+      const matchesRegion = !regionFilter || c.region === regionFilter;
+
+      const matchesSearch =
+        !search.trim() ||
+        c.name.toLowerCase().includes(search.trim().toLowerCase());
+
+      return matchesRegion && matchesSearch;
+    });
+  }, [allCountries, regionFilter, search]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div
+      className={
+        isDark
+          ? "min-h-screen bg-[#202c37] text-white"
+          : "min-h-screen bg-[#fafafa] text-[#656565]"
+      }
+    >
+      {/* TOP BAR */}
+      <header className={`shadow-sm ${isDark ? "bg-[#2b3945]" : "bg-white"}`}>
+        <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+          <h1 className={`text-sm sm:text-xl font-extrabold  ${ isDark ? `text-white` :`text-[#656565]`}`}>
+            Where in the world?
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex items-center gap-2 text-xs sm:text-sm font-semibold cursor-pointer"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            <span className="text-md">{isDark ? <BsFillMoonFill/> : <BsMoon/>}</span>
+            <span>Dark Mode</span>
+          </button>
+        </div>
+      </header>
+
+      {/* MAIN CONTENT */}
+      <main className="mx-auto max-w-6xl px-4 py-8">
+        {/* FILTER BAR */}
+        <section className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between mb-8">
+          {/* Search */}
+          <div
+            className={`flex items-center gap-3 px-6 py-4 rounded-md shadow-sm max-w-md w-full ${
+              isDark ? "bg-[#2b3945] text-white" : "bg-white text-[#656565]"
+            }`}
+          >
+            <span className={`text-2xl  font-bold ${ isDark ? ` text-white` : `text-[#656565]`}`}>
+              <MdOutlineSearch />
+            </span>
+            <input
+              type="text"
+              placeholder="Search for a country..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={`flex-1 bg-transparent text-[#656565] font-bold text-md outline-none placeholder:text-sm ${
+                isDark
+                  ? "placeholder:text-gray-300"
+                  : "placeholder:text-gray-500"
+              }`}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+
+          {/* Region filter */}
+          <div
+            className={`relative w-52 rounded-md shadow-sm text-sm ${
+              isDark ? "bg-[#2b3945] text-white" : "bg-white text-[#656565] font-bold"
+            }`}
           >
-            Documentation
-          </a>
-        </div>
+            <Menu as="div" className="relative w-52">
+              <Menu.Button
+                className={`flex items-center justify-between w-full px-4 py-4 rounded-md shadow-sm ${
+                  isDark ? "bg-[#2b3945] text-white" : "bg-white text-[#656565]"
+                }`}
+              >
+                {regionFilter ? regionFilter : 'Filter by Region'}
+                <FaChevronDown />
+              </Menu.Button>
+
+              <Menu.Items
+                className={`absolute mt-2 w-full rounded-md shadow-lg z-50 ${
+                  isDark ? "bg-[#2b3945] text-white" : "bg-white text-[#656565]"
+                }`}
+              >
+                {regions.map((region) => (
+                  <Menu.Item key={region}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => setRegionFilter(region)}
+                        className={`w-full text-left px-4 py-3 ${
+                          active
+                            ? isDark
+                              ? "bg-[#3a4d5c]"
+                              : "bg-gray-200"
+                            : ""
+                        }`}
+                      >
+                        {region}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </Menu.Items>
+            </Menu>
+          </div>
+        </section>
+
+        {/* COUNTRY GRID */}
+        <section className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 auto-rows-fr">
+          {filteredCountries.map((country) => (
+            <Link
+              key={country.code}
+              href={`/country/${country.code}`}
+              className={`overflow-hidden rounded-md shadow-md cursor-pointer transition-transform hover:-translate-y-1 ${
+                isDark ? "bg-[#2b3945]" : "bg-white"
+              }`}
+            >
+              <div className="h-40 w-full overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={country.flagUrl}
+                  alt={country.name}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="px-6 py-6 space-y-3">
+                <h2 className="font-extrabold text-lg">{country.name}</h2>
+                <ul className="space-y-1 text-sm">
+                  <li>
+                    <span className="font-semibold">Population: </span>
+                    {formatPopulation(country.population)}
+                  </li>
+                  <li>
+                    <span className="font-semibold">Region: </span>
+                    {country.region}
+                  </li>
+                  <li>
+                    <span className="font-semibold">Capital: </span>
+                    {country.capital}
+                  </li>
+                </ul>
+              </div>
+            </Link>
+          ))}
+        </section>
       </main>
     </div>
   );
