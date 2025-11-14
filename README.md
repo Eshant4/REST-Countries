@@ -16,7 +16,7 @@ Fully responsive UI based on Frontend Mentor design
 
 🔗 Live Demo (deploy on Vercel and add link here)
 
-https://rest-countries-sonu.vercel.app](https://rest-countries-two-topaz.vercel.app/
+https://rest-countries-two-topaz.vercel.app/
 
 🛠 Tech Stack
 Technology	Purpose
